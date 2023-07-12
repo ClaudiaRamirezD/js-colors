@@ -25,6 +25,7 @@
         let lastY = 0;
         let hue = 0;
         let direction = true;
+        
 
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
@@ -32,32 +33,55 @@
         canvas.addEventListener('mouseleave', stopDrawing);
 
         //Touch code
-        canvas.addEventListener('touchstart', startDrawing);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing, {
+            passive: false
+        });
+        canvas.addEventListener('touchmove', draw, {
+            passive: false
+        });
+        canvas.addEventListener('touchend', stopDrawing, {
+            passive: false
+        });
 
-        function startDrawing(e){
-            isDrawing = true;
-            [lastX,lastY] = [e.offsetX || 
-                            e.touches[0].pageX - canvas.offsetLeft, e.offsetY ||
-                            e.touches[0].pageY - canvas.offsetTop];
-
+        function startDrawing(e) {
+            if (e.type === 'mousedown') {
+                isDrawing = true;
+                lastX = e.offsetX;
+                lastY = e.offsetY;
+            } else if (e.type === 'touchstart') {
+                isDrawing = true;
+                lastX = e.touches[0].clientX - canvas.offsetLeft;
+                lastY = e.touches[0].clientY - canvas.offsetTop;
+                e.preventDefault();
+            }
+            
         }
 
-        function draw(e){
-            if(!isDrawing) return;
-            const [x,y] = [e.offsetX ||
-                            e.touches[0].pageX - canvas.offsetLeft, e.offsetY ||
-                        e.touches[0].pageY - canvas.offsetTop];
-            ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;            
+        function drawLine(startX, startY, endX, endY) {
+            ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;  
             ctx.beginPath();
-            //start from
-            ctx.moveTo(lastX, lastY);
-            //go to
-            ctx.lineTo(x,y);
-            ctx.stroke();
-            [lastX, lastY] = [x,y];
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();     
+        }
 
+        function draw(event) {
+            if (!isDrawing) return;
+            if (event.type === 'mousemove') {
+                const x = event.offsetX;
+                const y = event.offsetY;
+                drawLine(lastX, lastY, x, y);
+                lastX = x;
+                lastY = y;
+            } else if (event.type === 'touchmove') {
+                const x = event.touches[0].clientX - canvas.offsetLeft;
+                const y = event.touches[0].clientY - canvas.offsetTop;
+                drawLine(lastX, lastY, x, y);
+                lastX = x;
+                lastY = y;
+                event.preventDefault();
+    
+            }
             hue++;
             if (hue >= 360) {
                 hue = 0;
@@ -69,43 +93,13 @@
                 ctx.lineWidth++;
             } else {
                 ctx.lineWidth--;
-            }
-
+            }     
         }
 
-        function stopDrawing(){
+        function stopDrawing() {
             isDrawing = false;
         }
-
-
-
-        // function draw(e) {
-        //     if (!isDrawing) return;
-        //     console.log(e);
-        //     ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
-        //     ctx.beginPath();
-        //     //start from
-        //     ctx.moveTo(lastX, lastY);
-        //     //go to
-        //     ctx.lineTo(e.offsetX, e.offsetY);
-
-
-        //     ctx.stroke();
-        //     [lastX, lastY] = [e.offsetX, e.offsetY];
-
-
-        // }
-
-        // canvas.addEventListener('mousedown', (e) => {
-        //     isDrawing = true;
-        //     [lastX, lastY] = [e.offsetX, e.offsetY];
-        // });
-
-        // canvas.addEventListener('mousemove', draw);
-        // canvas.addEventListener('mouseup', () => isDrawing = false);
-        // canvas.addEventListener('mouseout', () => isDrawing = false);
-
-        </script>
+    </script>
 
     <style>
         html,
