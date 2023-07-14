@@ -8,10 +8,17 @@
 </head>
 
 <body>
+    <div class="buttons">
+        <button class="reset">Reset</button>
+        <button class="copy">Copy</button>
+    </div>
     <canvas id="draw" width="800" height="800"></canvas>
     <script>
         const canvas = document.querySelector('#draw');
         const ctx = canvas.getContext('2d');
+        const clear = document.querySelector('.reset');
+        const copy = document.querySelector('.copy');
+
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         ctx.strokeStyle = '#BADA55';
@@ -25,23 +32,6 @@
         let lastY = 0;
         let hue = 0;
         let direction = true;
-        
-
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
-
-        //Touch code
-        canvas.addEventListener('touchstart', startDrawing, {
-            passive: false
-        });
-        canvas.addEventListener('touchmove', draw, {
-            passive: false
-        });
-        canvas.addEventListener('touchend', stopDrawing, {
-            passive: false
-        });
 
         function startDrawing(e) {
             if (e.type === 'mousedown') {
@@ -54,15 +44,15 @@
                 lastY = e.touches[0].clientY - canvas.offsetTop;
                 e.preventDefault();
             }
-            
+
         }
 
         function drawLine(startX, startY, endX, endY) {
-            ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;  
+            ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
             ctx.beginPath();
             ctx.moveTo(startX, startY);
             ctx.lineTo(endX, endY);
-            ctx.stroke();     
+            ctx.stroke();
         }
 
         function draw(event) {
@@ -80,7 +70,7 @@
                 lastX = x;
                 lastY = y;
                 event.preventDefault();
-    
+
             }
             hue++;
             if (hue >= 360) {
@@ -93,18 +83,60 @@
                 ctx.lineWidth++;
             } else {
                 ctx.lineWidth--;
-            }     
+            }
         }
 
         function stopDrawing() {
             isDrawing = false;
         }
+
+        function deleteAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function screenshot() {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'canvas_screenshot.png';
+            link.click();
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+        clear.addEventListener('click', deleteAll);
+        copy.addEventListener('click', screenshot);
+
+        //Touch code
+        canvas.addEventListener('touchstart', startDrawing, {
+            passive: false
+        });
+        canvas.addEventListener('touchmove', draw, {
+            passive: false
+        });
+        canvas.addEventListener('touchend', stopDrawing, {
+            passive: false
+        });
     </script>
 
     <style>
         html,
         body {
             margin: 0;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+        }
+
+        button {
+            background-color: black;
+            color: rgb(212, 255, 0);
+            padding: .3em;
         }
     </style>
 
